@@ -25,7 +25,7 @@ typedef NS_ENUM(NSInteger, RobotState) {
 - (void)run {
   while (true) {
     if (_currentRobotState == RobotStateFiring) {
-      
+      //robot stop and shoot for 1 sec 
       if ((self.currentTimestamp - _lastKnownPositionTimestamp) > 1.f) {
         _currentRobotState = RobotStateSearching;
       } else {
