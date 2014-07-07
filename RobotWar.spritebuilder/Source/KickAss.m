@@ -19,9 +19,10 @@ typedef NS_ENUM(NSInteger, RobotState) {
     
     CGPoint _lastKnownPosition;
     CGFloat _lastKnownPositionTimestamp;
-    
+    BOOL aimleft;
 }
 
+BOOL aimleft = TRUE;
 
 - (void)run {
     while (true) {
@@ -42,7 +43,7 @@ typedef NS_ENUM(NSInteger, RobotState) {
         }
         
         if (_currentRobotState == RobotStateSearching) {
-            int r = arc4random() % 10;
+            //int r = arc4random() % 10;
             
             int x = _lastKnownPosition.x - self.position.x;
             int y = _lastKnownPosition.y - self.position.y;
@@ -57,7 +58,7 @@ typedef NS_ENUM(NSInteger, RobotState) {
              */
             
             float missingAngle = [self angleBetweenHeadingDirectionAndWorldPosition:_lastKnownPosition];
-            NSLog(@"the missing angle is %f",missingAngle);
+            //NSLog(@"the missing angle is %f",missingAngle);
             //turn the gun in that direction first
             //[self turnGunLeft:missingAngle];
             
@@ -80,14 +81,28 @@ typedef NS_ENUM(NSInteger, RobotState) {
         
         if (_currentRobotState == RobotStateDefault) {
             //go to the one corner
+
             
+            //[self moveBack:10];
             
-            //[self moveAhead:40];
-            //[self shoot];
+            if (!aimleft){
+                [self turnGunLeft:10];
+                [self shoot];
+                //[self turnGunLeft:10];
+                //[self shoot];
+                aimleft = TRUE;
+            }
+            else {
+                [self turnGunRight:10];
+                [self shoot];
+                //[self turnGunRight:10];
+                //[self shoot];
+                aimleft = FALSE;
+            }
             //[self turnRobotLeft:90];
             //NSLog(@"%f, %f",self.headingDirection.x, self.headingDirection.y);
             //[self turnGunRight:7];
-            [self shoot];
+            //[self shoot];
             
             
         }

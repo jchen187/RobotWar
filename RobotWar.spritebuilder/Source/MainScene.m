@@ -53,6 +53,8 @@
   [robot1 _setRobotColor:[CCColor colorWithCcColor3b:ccc3(251, 72, 154)]];
   [robot1 _setFieldOfViewColor:[CCColor colorWithCcColor3b:ccc3(251, 87, 172)]];
   
+    
+    //the y position of the robots will be random   
   robot1.robotNode.position = ccp(50, arc4random_uniform(140) + 80);
   [_gameNode addChild:robot1.robotNode];
   robot1.gameBoard = self;
