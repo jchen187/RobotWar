@@ -22,12 +22,13 @@
 
     while (self.currentRobotState == RobotStateFirstMove) {
       [self performNextFirstMove];
+        
     }
     
     while (_currentRobotState == RobotStateFiring) {
       [self performNextFiringAction];
+        [self shoot];
     }
-
   }
 }
 
@@ -40,9 +41,13 @@
         if (currentPosition.x < arenaSize.width/2) {
           //bottom left
           [self turnRobotLeft:90];
+          [self turnGunRight:45];
+            //[self shoot];
         } else {
           //bottom right
           [self turnRobotRight:90];
+            [self turnGunLeft:45];
+            //[self shoot];
         }
       } else {
         if (currentPosition.x < arenaSize.width/2) {

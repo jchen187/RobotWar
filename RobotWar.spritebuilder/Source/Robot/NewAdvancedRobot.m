@@ -17,32 +17,85 @@
 
 - (void)run {
   actionIndex = 0;
+    self.currentRobotState = RobotStateDefault;
   while (true) {
-    while (_currentRobotState == RobotStateFiring) {
-      [self performNextFiringAction];
+      while (_currentRobotState == RobotStateDefault) {
+          [self performNextDefaultAction];
+    
     }
     
     while (_currentRobotState == RobotStateSearching) {
       [self performNextSearchingAction];
     }
-    
-    while (_currentRobotState == RobotStateDefault) {
-      [self performNextDefaultAction];
+      while (_currentRobotState == RobotStateFiring) {
+          [self performNextFiringAction];
     }
   }
 }
 
 - (void)performNextDefaultAction {
-  switch (actionIndex%1) {
-    case 0:
-      [self moveAhead:100];
-      break;
-  }
-  actionIndex++;
+    switch (actionIndex%4) {
+        case 0: {
+            CGPoint currentPosition = [self position];
+            CGSize arenaSize = [self arenaDimensions];
+            if (currentPosition.y < arenaSize.height/2) {
+                if (currentPosition.x < arenaSize.width/2) {
+                    //bottom left
+                    [self turnRobotLeft:90];
+                    [self turnGunRight:45];
+                    //[self shoot];
+                } else {
+                    //bottom right
+                    [self turnRobotRight:90];
+                    [self turnGunLeft:45];
+                    //[self shoot];
+                }
+            } else {
+                if (currentPosition.x < arenaSize.width/2) {
+                    //top left
+                    [self turnRobotRight:90];
+                } else {
+                    //top right
+                    [self turnRobotLeft:90];
+                }
+            }
+            
+            break;
+        }
+        case 1: {
+            CGPoint currentPosition = [self position];
+            CGSize arenaSize = [self arenaDimensions];
+            float bodyLength = [self robotBoundingBox].size.width; //offset is 2 so we dont trigger hit wall
+            if (currentPosition.y < arenaSize.height/2) {
+                [self moveBack:(currentPosition.y - bodyLength)];
+            } else {
+                [self moveBack:(arenaSize.height - (currentPosition.y + bodyLength))];
+            }
+            break;
+        }
+        case 2: {
+            CGSize arenaSize = [self arenaDimensions];
+            float angle = [self angleBetweenGunHeadingDirectionAndWorldPosition:ccp(arenaSize.width/2, arenaSize.height/2)];
+            
+            if (angle < 0) {
+                [self turnGunLeft:fabsf(angle)];
+            } else {
+                [self turnGunRight:angle];
+            }
+            break;
+        }
+            
+        case 3: {
+            [self shoot];
+            
+            self.currentRobotState = RobotStateWaiting;
+        }
+    }
+    actionIndex++;
 }
 
 - (void) performNextFiringAction {
-  if ((self.currentTimestamp - _lastKnownPositionTimestamp) > 1.f) {
+  if ((self.currentTimestamp - _lastKnownPositionTimestamp) > .1f) {
     self.currentRobotState = RobotStateSearching;
   } else {
     CGFloat angle = [self angleBetweenGunHeadingDirectionAndWorldPosition:_lastKnownPosition];
@@ -76,19 +129,22 @@
   actionIndex++;
 }
 
-- (void)bulletHitEnemy:(Bullet *)bullet {
-  // There are a couple of neat things you could do in this handler
+- (void)scannedRobot:(Robot *)robot atPosition:(CGPoint)position {
+    if (_currentRobotState != RobotStateFiring) {
+        [self cancelActiveAction];
+    }
+    
+    _lastKnownPosition = position;
+    _lastKnownPositionTimestamp = self.currentTimestamp;
+    self.currentRobotState = RobotStateFiring;
 }
 
-- (void)scannedRobot:(Robot *)robot atPosition:(CGPoint)position {
-  if (_currentRobotState != RobotStateFiring) {
-    [self cancelActiveAction];
-  }
-  
-  _lastKnownPosition = position;
-  _lastKnownPositionTimestamp = self.currentTimestamp;
-  self.currentRobotState = RobotStateFiring;
+- (void)bulletHitEnemy:(Bullet *)bullet {
+  // There are a couple of neat things you could do in this handler
+    [self shoot];
 }
+
+
 
 - (void)hitWall:(RobotWallHitDirection)hitDirection hitAngle:(CGFloat)angle {
   if (_currentRobotState != RobotStateTurnaround) {
@@ -114,6 +170,12 @@
 - (void)setCurrentRobotState:(RobotState)currentRobotState {
   _currentRobotState = currentRobotState;
   actionIndex = 0;
+}
+
+- (void)gotHit{
+    //int r = arc4random() % 200;
+    [self shoot];
+    
 }
 
 @end
